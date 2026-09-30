@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ffffff;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .timeline {
+      width: 100%;
+      padding: 0 16px;
+    }
+
+    .line {
+      position: relative;
+      width: 100%;
+      height: 2px;
+      background: #111;
+    }
+
+    .event {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #111;
+      margin-top: -6px;
+    }
+
+    .tick {
+      width: 2px;
+      height: 32px;
+      background: #111;
+    }
+
+    .card {
+      width: max-content;
+      max-width: 80vw;
+      text-align: center;
+    }
+
+    .card a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card a:hover .title { text-decoration: underline; }
+
+    .title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .date {
+      margin-top: 4px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <main class="timeline">
+    <div class="line">
+      <div class="event">
+        <div class="dot"></div>
+        <div class="tick"></div>
+        <div class="card">
+          <a href="https://www.bbc.com/portuguese/articles/c7200q2jen2o" target="_blank" rel="noopener noreferrer">
+            <div class="title">TRUMP CONDENADO POR ABUSO SEXUAL</div>
+            <div class="date">9 de maio de 2023</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
