@@ -14,119 +14,167 @@
       min-height: 100vh;
       display: flex;
       align-items: center;
-      overflow-x: hidden;
     }
 
-    /* Escala: 1990 (0%) até 2026 (100%) — cada ano = 100/36 % */
-    .timeline {
+    /* Desktop: linha horizontal, eventos em ordem cronológica com espaço igual */
+    .scroller {
       width: 100%;
+      overflow-x: auto;
       padding: 0 16px;
     }
 
-    .line {
-      position: relative;
-      width: 100%;
-      height: 2px;
-      background: #111;
-    }
-
-    .range {
-      position: absolute;
-      top: -3px;
-      height: 8px;
-      background: #111;
-      border-radius: 4px;
+    .timeline {
+      list-style: none;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(200px, 1fr);
     }
 
     .event {
+      position: relative;
+      height: 400px;
+    }
+
+    /* Trecho da linha em cada evento */
+    .event::before {
+      content: "";
       position: absolute;
-      top: 0;
-      width: 0;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 2px;
+      margin-top: -1px;
+      background: #111;
     }
 
     .dot {
       position: absolute;
-      left: -7px;
-      top: -6px;
+      left: 50%;
+      top: 50%;
       width: 14px;
       height: 14px;
-      border-radius: 50%;
+      margin: -7px 0 0 -7px;
+      border-radius: 7px;
       background: #111;
+    }
+
+    /* Período (ex.: 1993–1996) */
+    .dot.range {
+      width: 36px;
+      margin-left: -18px;
     }
 
     .tick {
       position: absolute;
-      left: -1px;
-      top: 0;
+      left: 50%;
+      top: 50%;
       width: 2px;
       height: 40px;
+      margin-left: -1px;
       background: #111;
     }
 
     .card {
       position: absolute;
-      top: 44px;
-      width: max-content;
-      max-width: 36vw;
+      left: 8px;
+      right: 8px;
+      top: calc(50% + 44px);
+      text-align: center;
     }
 
-    .card.start { left: -1px; text-align: left; }
-    .card.end   { right: -1px; text-align: right; }
-    .card.center { left: 0; transform: translateX(-50%); text-align: center; }
-
-    /* Evento com texto acima da linha */
-    .event.above .tick { top: auto; bottom: 0; }
-    .event.above .card { top: auto; bottom: 44px; }
-
-    .card a + a .title { margin-top: 6px; }
-    .card a { display: block; }
+    /* Eventos pares com texto acima da linha */
+    .event:nth-child(even) .tick { top: auto; bottom: 50%; }
+    .event:nth-child(even) .card { top: auto; bottom: calc(50% + 44px); }
 
     .card a {
+      display: block;
       color: inherit;
       text-decoration: none;
     }
 
     .card a:hover .title { text-decoration: underline; }
 
+    .card a + a .title { margin-top: 6px; }
+
     .title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       letter-spacing: 0.02em;
     }
 
     .date {
       margin-top: 4px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #555;
     }
 
-    @media (max-width: 600px) {
-      .title { font-size: 0.85rem; }
-      .date  { font-size: 0.75rem; }
+    /* Celular: linha vertical */
+    @media (max-width: 640px) {
+      body { align-items: flex-start; }
+
+      .scroller { padding: 32px 16px; overflow-x: visible; }
+
+      .timeline { display: block; }
+
+      .event {
+        height: auto;
+        padding: 0 0 32px 32px;
+      }
+
+      .event:last-child { padding-bottom: 0; }
+
+      .event::before {
+        left: 6px;
+        right: auto;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        height: auto;
+        margin: 0;
+      }
+
+      .event:first-child::before { top: 4px; }
+      .event:last-child::before { bottom: auto; height: 4px; }
+
+      .dot,
+      .dot.range {
+        left: 0;
+        top: 4px;
+        margin: 0;
+        width: 14px;
+      }
+
+      .dot.range { height: 28px; }
+
+      .tick { display: none; }
+
+      .card,
+      .event:nth-child(even) .card {
+        position: static;
+        text-align: left;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="timeline">
-    <div class="line">
+  <main class="scroller">
+    <ol class="timeline">
 
-      <!-- 1993 – 1996 -->
-      <div class="range" style="left: 8.333%; width: 8.333%;"></div>
-      <div class="event" style="left: 8.333%;">
+      <li class="event">
+        <div class="dot range"></div>
         <div class="tick"></div>
-        <div class="card start">
+        <div class="card">
           <a href="https://www.bbc.com/news/articles/c74xgp81pqgo" target="_blank" rel="noopener noreferrer">
             <div class="title">TRUMP VOOU NO JATO DE EPSTEIN</div>
-            <div class="date">Entre 1993 e 1996</div>
           </a>
+          <div class="date">Entre 1993 e 1996</div>
         </div>
-      </div>
+      </li>
 
-      <!-- 4 de fevereiro de 2004 -->
-      <div class="event above" style="left: 39.141%;">
+      <li class="event">
         <div class="dot"></div>
         <div class="tick"></div>
-        <div class="card center">
+        <div class="card">
           <a href="https://pt.wikipedia.org/wiki/Facebook" target="_blank" rel="noopener noreferrer">
             <div class="title">LANÇAMENTO FACEBOOK</div>
           </a>
@@ -135,33 +183,42 @@
           </a>
           <div class="date">4 de fevereiro de 2004</div>
         </div>
-      </div>
+      </li>
 
-      <!-- 12 de dezembro de 2018 -->
-      <div class="event above" style="left: 80.403%;">
+      <li class="event">
         <div class="dot"></div>
         <div class="tick"></div>
-        <div class="card center">
+        <div class="card">
           <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13756.htm" target="_blank" rel="noopener noreferrer">
             <div class="title">BETS SURGIRAM NO GOVERNO TEMER</div>
           </a>
           <div class="date">12 de dezembro de 2018</div>
         </div>
-      </div>
+      </li>
 
-      <!-- 9 de maio de 2023 -->
-      <div class="event" style="left: 91.667%;">
+      <li class="event">
         <div class="dot"></div>
         <div class="tick"></div>
-        <div class="card end">
+        <div class="card">
+          <a href="https://youtu.be/irAFYAH0hZw" target="_blank" rel="noopener noreferrer">
+            <div class="title">PAULO GUEDES AFIRMA "DEIXA QUE SE FODAM" SOBRE BETS</div>
+          </a>
+          <div class="date">22 de abril de 2020</div>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="dot"></div>
+        <div class="tick"></div>
+        <div class="card">
           <a href="https://www.bbc.com/portuguese/articles/c7200q2jen2o" target="_blank" rel="noopener noreferrer">
             <div class="title">TRUMP CONDENADO POR ABUSO SEXUAL</div>
-            <div class="date">9 de maio de 2023</div>
           </a>
+          <div class="date">9 de maio de 2023</div>
         </div>
-      </div>
+      </li>
 
-    </div>
+    </ol>
   </main>
 </body>
 </html>
