@@ -72,6 +72,14 @@
 
     .card.start { left: -1px; text-align: left; }
     .card.end   { right: -1px; text-align: right; }
+    .card.center { left: 0; transform: translateX(-50%); text-align: center; }
+
+    /* Evento com texto acima da linha */
+    .event.above .tick { top: auto; bottom: 0; }
+    .event.above .card { top: auto; bottom: 44px; }
+
+    .card a + a .title { margin-top: 6px; }
+    .card a { display: block; }
 
     .card a {
       color: inherit;
@@ -111,6 +119,21 @@
             <div class="title">TRUMP VOOU NO JATO DE EPSTEIN</div>
             <div class="date">Entre 1993 e 1996</div>
           </a>
+        </div>
+      </div>
+
+      <!-- 4 de fevereiro de 2004 -->
+      <div class="event above" style="left: 39.141%;">
+        <div class="dot"></div>
+        <div class="tick"></div>
+        <div class="card center">
+          <a href="https://pt.wikipedia.org/wiki/Facebook" target="_blank" rel="noopener noreferrer">
+            <div class="title">LANÇAMENTO FACEBOOK</div>
+          </a>
+          <a href="https://en.wikipedia.org/wiki/DARPA_LifeLog" target="_blank" rel="noopener noreferrer">
+            <div class="title">CANCELAMENTO DARPA LIFELOG</div>
+          </a>
+          <div class="date">4 de fevereiro de 2004</div>
         </div>
       </div>
 
