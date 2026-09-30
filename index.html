@@ -391,7 +391,7 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="daniel-vorcaro">
         <div class="dot"></div>
         <div class="tick"></div>
         <div class="card">
@@ -424,14 +424,15 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="luciano-huck daniel-vorcaro">
         <div class="dot range"></div>
         <div class="tick"></div>
         <div class="card">
-          <a href="https://veja.abril.com.br/brasil/mensagens-da-pf-revelam-que-luciano-huck-foi-amigo-e-conselheiro-de-daniel-vorcaro/" target="_blank" rel="noopener noreferrer">
+          <button type="button" class="open-modal" data-modal="modal-huck-vorcaro">
             <div class="title">LUCIANO HUCK E VORCARO FECHAM NEGÓCIOS</div>
-          </a>
-          <div class="date">Entre 2023 e 2024</div>
+            <div class="date">Entre 2023 e 2024</div>
+            <div class="more">Ver envolvidos</div>
+          </button>
         </div>
       </li>
 
@@ -495,7 +496,7 @@
         </div>
       </li>
 
-      <li class="event" data-people="flavio-bolsonaro">
+      <li class="event" data-people="flavio-bolsonaro daniel-vorcaro">
         <div class="dot range"></div>
         <div class="tick"></div>
         <div class="card">
@@ -551,7 +552,7 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="daniel-vorcaro">
         <div class="dot"></div>
         <div class="tick"></div>
         <div class="card">
@@ -680,6 +681,20 @@
     <h2>FONTES</h2>
     <ul>
       <li><a href="https://www.metropoles.com/colunas/demetrio-vecchioli/willer-tomaz-apostou-r-5-bilhoes-em-bet-perdeu-r-163-mi-e-pede-devolucao" target="_blank" rel="noopener noreferrer">Metrópoles</a></li>
+    </ul>
+  </dialog>
+
+  <dialog id="modal-huck-vorcaro" aria-labelledby="modal-huck-vorcaro-title">
+    <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+    <p class="modal-title" id="modal-huck-vorcaro-title">LUCIANO HUCK E VORCARO FECHAM NEGÓCIOS</p>
+    <h2>ENVOLVIDOS</h2>
+    <ul>
+      <li><button type="button" class="person" data-person="luciano-huck">Luciano Huck</button></li>
+      <li><button type="button" class="person" data-person="daniel-vorcaro">Daniel Vorcaro</button></li>
+    </ul>
+    <h2>FONTES</h2>
+    <ul>
+      <li><a href="https://veja.abril.com.br/brasil/mensagens-da-pf-revelam-que-luciano-huck-foi-amigo-e-conselheiro-de-daniel-vorcaro/" target="_blank" rel="noopener noreferrer">Veja</a></li>
     </ul>
   </dialog>
 
