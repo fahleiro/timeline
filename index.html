@@ -119,6 +119,75 @@
       text-decoration: underline;
     }
 
+    /* Evento que abre modal */
+    .card .open-modal {
+      display: block;
+      width: 100%;
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      text-align: inherit;
+      cursor: pointer;
+    }
+
+    .card .open-modal:hover .title { text-decoration: underline; }
+
+    .more {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: #555;
+      text-decoration: underline;
+    }
+
+    dialog {
+      width: min(92vw, 520px);
+      margin: auto;
+      padding: 24px;
+      border: 2px solid #111;
+      border-radius: 8px;
+      color: #111;
+      background: #fff;
+    }
+
+    dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+
+    dialog h2 {
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    dialog h2 + ul { margin-bottom: 20px; }
+
+    dialog ul { padding-left: 20px; }
+
+    dialog li { margin-bottom: 6px; }
+
+    dialog a { color: inherit; word-break: break-word; }
+
+    .modal-title {
+      font-weight: 700;
+      margin: 0 32px 20px 0;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      background: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #111;
+    }
+
+    dialog { position: fixed; }
+
     /* Celular: linha vertical */
     @media (max-width: 640px) {
       body { align-items: flex-start; }
@@ -367,10 +436,11 @@
         <div class="dot"></div>
         <div class="tick"></div>
         <div class="card">
-          <a href="https://jovempan.com.br/politica/foto-de-flavio-em-safari-na-africa-do-sul-reune-senador-e-advogado-investigados-no-caso-do-inss/" target="_blank" rel="noopener noreferrer">
+          <button type="button" class="open-modal" data-modal="modal-safari">
             <div class="title">FLÁVIO BOLSONARO REALIZA SAFÁRI COM INVESTIGADOS DO INSS</div>
-          </a>
-          <div class="date">Março de 2025</div>
+            <div class="date">Março de 2025</div>
+            <div class="more">Ver envolvidos</div>
+          </button>
         </div>
       </li>
 
@@ -431,5 +501,38 @@
 
     </ol>
   </main>
+
+  <dialog id="modal-safari" aria-labelledby="modal-safari-title">
+    <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+    <p class="modal-title" id="modal-safari-title">FLÁVIO BOLSONARO REALIZA SAFÁRI COM INVESTIGADOS DO INSS</p>
+    <h2>ENVOLVIDOS</h2>
+    <ul>
+      <li>Flávio Bolsonaro (senador, PL-RJ)</li>
+      <li>Weverton Rocha (senador, PDT-MA)</li>
+      <li>Willer Tomaz (advogado)</li>
+    </ul>
+    <h2>FONTES</h2>
+    <ul>
+      <li><a href="https://jovempan.com.br/politica/foto-de-flavio-em-safari-na-africa-do-sul-reune-senador-e-advogado-investigados-no-caso-do-inss/" target="_blank" rel="noopener noreferrer">Jovem Pan</a></li>
+    </ul>
+  </dialog>
+
+  <script>
+    document.querySelectorAll('.open-modal').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById(btn.dataset.modal).showModal();
+      });
+    });
+
+    document.querySelectorAll('dialog').forEach(function (dlg) {
+      dlg.querySelector('.modal-close').addEventListener('click', function () {
+        dlg.close();
+      });
+      // Fecha ao clicar fora da caixa
+      dlg.addEventListener('click', function (e) {
+        if (e.target === dlg) dlg.close();
+      });
+    });
+  </script>
 </body>
 </html>
