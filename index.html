@@ -188,6 +188,25 @@
 
     dialog { position: fixed; }
 
+    /* Nome clicável que abre a linha do tempo da pessoa */
+    .person {
+      background: none;
+      border: 0;
+      padding: 0;
+      font: inherit;
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .person-events li { margin-bottom: 12px; }
+
+    .person-events .date { margin-top: 2px; }
+
+    .person-events a { text-decoration: none; }
+
+    .person-events a:hover { text-decoration: underline; }
+
     /* Celular: linha vertical */
     @media (max-width: 640px) {
       body { align-items: flex-start; }
@@ -339,7 +358,7 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="flavio-bolsonaro">
         <div class="dot range"></div>
         <div class="tick"></div>
         <div class="card">
@@ -443,7 +462,7 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="flavio-bolsonaro">
         <div class="dot range"></div>
         <div class="tick"></div>
         <div class="card">
@@ -454,7 +473,7 @@
         </div>
       </li>
 
-      <li class="event">
+      <li class="event" data-people="flavio-bolsonaro weverton-rocha willer-tomaz">
         <div class="dot"></div>
         <div class="tick"></div>
         <div class="card">
@@ -576,6 +595,29 @@
         </div>
       </li>
 
+      <li class="event" data-people="willer-tomaz">
+        <div class="dot"></div>
+        <div class="tick"></div>
+        <div class="card">
+          <button type="button" class="open-modal" data-modal="modal-willer-bets">
+            <div class="title">WILLER TOMAZ PEDE REEMBOLSO DE 163 MILHÕES APÓS APOSTAR 5 BILHÕES EM BETS</div>
+            <div class="date">Setembro de 2026</div>
+            <div class="more">Ver envolvidos</div>
+          </button>
+        </div>
+      </li>
+
+      <li class="event">
+        <div class="dot"></div>
+        <div class="tick"></div>
+        <div class="card">
+          <a href="https://ticotimes.net/2026/09/29/costa-rica-45-tons-drugs-us-military-plane" target="_blank" rel="noopener noreferrer">
+            <div class="title">COSTA RICA ENVIA 45 TONELADAS DE DROGAS PARA OS EUA</div>
+          </a>
+          <div class="date">29 de setembro de 2026</div>
+        </div>
+      </li>
+
     </ol>
   </main>
 
@@ -584,9 +626,9 @@
     <p class="modal-title" id="modal-safari-title">FLÁVIO BOLSONARO REALIZA SAFÁRI COM INVESTIGADOS DO INSS</p>
     <h2>ENVOLVIDOS</h2>
     <ul>
-      <li>Flávio Bolsonaro (senador, PL-RJ)</li>
-      <li>Weverton Rocha (senador, PDT-MA)</li>
-      <li>Willer Tomaz (advogado)</li>
+      <li><button type="button" class="person" data-person="flavio-bolsonaro">Flávio Bolsonaro</button> (senador, PL-RJ)</li>
+      <li><button type="button" class="person" data-person="weverton-rocha">Weverton Rocha</button> (senador, PDT-MA)</li>
+      <li><button type="button" class="person" data-person="willer-tomaz">Willer Tomaz</button> (advogado)</li>
     </ul>
     <h2>FONTES</h2>
     <ul>
@@ -595,10 +637,69 @@
     </ul>
   </dialog>
 
+  <dialog id="modal-willer-bets" aria-labelledby="modal-willer-bets-title">
+    <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+    <p class="modal-title" id="modal-willer-bets-title">WILLER TOMAZ PEDE REEMBOLSO DE 163 MILHÕES APÓS APOSTAR 5 BILHÕES EM BETS</p>
+    <h2>ENVOLVIDOS</h2>
+    <ul>
+      <li><button type="button" class="person" data-person="willer-tomaz">Willer Tomaz</button> (advogado)</li>
+    </ul>
+    <h2>FONTES</h2>
+    <ul>
+      <li><a href="https://www.metropoles.com/colunas/demetrio-vecchioli/willer-tomaz-apostou-r-5-bilhoes-em-bet-perdeu-r-163-mi-e-pede-devolucao" target="_blank" rel="noopener noreferrer">Metrópoles</a></li>
+    </ul>
+  </dialog>
+
+  <!-- Linha do tempo de uma pessoa: preenchida pelo script a partir dos eventos com data-people -->
+  <dialog id="modal-person" aria-labelledby="modal-person-title">
+    <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+    <p class="modal-title" id="modal-person-title"></p>
+    <ul class="person-events"></ul>
+  </dialog>
+
   <script>
     document.querySelectorAll('.open-modal').forEach(function (btn) {
       btn.addEventListener('click', function () {
         document.getElementById(btn.dataset.modal).showModal();
+      });
+    });
+
+    // Abre a linha do tempo da pessoa, do fato mais recente para o mais antigo
+    document.querySelectorAll('.person').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.person;
+        var dlg = document.getElementById('modal-person');
+        var list = dlg.querySelector('.person-events');
+        list.innerHTML = '';
+        dlg.querySelector('.modal-title').textContent = btn.textContent.toUpperCase();
+
+        var events = Array.prototype.slice.call(document.querySelectorAll('.event[data-people]'))
+          .filter(function (ev) { return ev.dataset.people.split(' ').indexOf(id) !== -1; })
+          .reverse();
+
+        events.forEach(function (ev) {
+          var card = ev.querySelector('.card');
+          var modalBtn = card.querySelector('.open-modal');
+          var source = modalBtn
+            ? document.getElementById(modalBtn.dataset.modal).querySelector('a[href]')
+            : card.querySelector('a[href]');
+
+          var li = document.createElement('li');
+          var link = document.createElement('a');
+          link.href = source.href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.className = 'title';
+          link.textContent = card.querySelector('.title').textContent;
+          var date = document.createElement('div');
+          date.className = 'date';
+          date.textContent = card.querySelector('.date').textContent;
+          li.appendChild(link);
+          li.appendChild(date);
+          list.appendChild(li);
+        });
+
+        dlg.showModal();
       });
     });
 
