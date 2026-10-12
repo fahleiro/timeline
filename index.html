@@ -9,8 +9,8 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #ffffff;
-      color: #111;
+      background: #0d0d0d;
+      color: #f2f2f2;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -44,7 +44,7 @@
       top: 50%;
       height: 2px;
       margin-top: -1px;
-      background: #111;
+      background: #f2f2f2;
     }
 
     .dot {
@@ -55,7 +55,7 @@
       height: 14px;
       margin: -7px 0 0 -7px;
       border-radius: 7px;
-      background: #111;
+      background: #f2f2f2;
     }
 
     /* Período (ex.: 1993–1996) */
@@ -71,7 +71,7 @@
       width: 2px;
       height: 40px;
       margin-left: -1px;
-      background: #111;
+      background: #f2f2f2;
     }
 
     .card {
@@ -105,13 +105,13 @@
     .date {
       margin-top: 4px;
       font-size: 0.85rem;
-      color: #555;
+      color: #a6a6a6;
     }
 
     .sources {
       margin-top: 4px;
       font-size: 0.8rem;
-      color: #555;
+      color: #a6a6a6;
     }
 
     .card .sources a {
@@ -137,39 +137,67 @@
     .more {
       margin-top: 4px;
       font-size: 0.8rem;
-      color: #555;
+      color: #a6a6a6;
       text-decoration: underline;
     }
 
+    /* Modal quadrado: sempre do mesmo tamanho, o texto se ajusta para caber (slide) */
     dialog {
-      width: min(92vw, 520px);
+      --s: min(92vw, 92vh, 640px);
+      position: fixed;
+      width: var(--s);
+      height: var(--s);
+      max-width: none;
+      max-height: none;
       margin: auto;
-      padding: 24px;
-      border: 2px solid #111;
-      border-radius: 8px;
-      color: #111;
-      background: #fff;
+      padding: calc(var(--s) * 0.08);
+      overflow: hidden;
+      border: 1px solid #f2f2f2;
+      border-radius: 0;
+      color: #f2f2f2;
+      background: #0d0d0d;
     }
 
-    dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+    dialog[open] {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    dialog::backdrop { background: rgba(0, 0, 0, 0.8); }
 
     dialog h2 {
-      font-size: 1rem;
-      letter-spacing: 0.04em;
-      margin-bottom: 8px;
+      font-size: 0.8em;
+      letter-spacing: 0.08em;
+      color: #a6a6a6;
+      margin-bottom: 0.5em;
     }
 
-    dialog h2 + ul { margin-bottom: 20px; }
+    dialog h2 + ul { margin-bottom: 1.2em; }
 
-    dialog ul { padding-left: 20px; }
+    dialog ul { padding-left: 1.2em; }
 
-    dialog li { margin-bottom: 6px; }
+    dialog li { margin-bottom: 0.35em; }
 
     dialog a { color: inherit; word-break: break-word; }
 
+    dialog .title { font-size: 1em; }
+
+    dialog .date { font-size: 0.8em; }
+
     .modal-title {
+      font-size: 1.3em;
       font-weight: 700;
-      margin: 0 32px 20px 0;
+      letter-spacing: 0.02em;
+      margin: 0 1.4em 0.3em 0;
+    }
+
+    .modal-title + .modal-title { margin-top: 0.4em; }
+
+    .modal-date {
+      font-size: 0.85em;
+      color: #a6a6a6;
+      margin-bottom: 1.4em;
     }
 
     .modal-close {
@@ -183,10 +211,8 @@
       font-size: 1.5rem;
       line-height: 1;
       cursor: pointer;
-      color: #111;
+      color: #f2f2f2;
     }
-
-    dialog { position: fixed; }
 
     /* Nome clicável que abre a linha do tempo da pessoa */
     .person {
@@ -199,9 +225,9 @@
       cursor: pointer;
     }
 
-    .person-events li { margin-bottom: 12px; }
+    .person-events li { margin-bottom: 0.7em; }
 
-    .person-events .date { margin-top: 2px; }
+    .person-events .date { margin-top: 0.1em; }
 
     .person-events a { text-decoration: none; }
 
@@ -1052,6 +1078,15 @@
     </ul>
   </dialog>
 
+  <!-- Modal genérico: preenchido pelo script com título, data e fontes do card -->
+  <dialog id="modal-auto" aria-labelledby="modal-auto-title">
+    <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+    <div class="auto-titles" id="modal-auto-title"></div>
+    <p class="modal-date"></p>
+    <h2>FONTES</h2>
+    <ul class="auto-sources"></ul>
+  </dialog>
+
   <!-- Linha do tempo de uma pessoa: preenchida pelo script a partir dos eventos com data-people -->
   <dialog id="modal-person" aria-labelledby="modal-person-title">
     <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
@@ -1060,9 +1095,125 @@
   </dialog>
 
   <script>
+    var SOURCE_NAMES = {
+      'bbc.com': 'BBC', 'g1.globo.com': 'g1', 'oglobo.globo.com': 'O Globo', 'valor.globo.com': 'Valor',
+      'folha.uol.com.br': 'Folha', 'noticias.uol.com.br': 'UOL', 'economia.uol.com.br': 'UOL',
+      'pt.wikipedia.org': 'Wikipédia', 'en.wikipedia.org': 'Wikipédia (inglês)',
+      'cnnbrasil.com.br': 'CNN Brasil', 'estadao.com.br': 'Estadão', 'metropoles.com': 'Metrópoles',
+      'veja.abril.com.br': 'Veja', 'youtu.be': 'YouTube', 'youtube.com': 'YouTube', 'exame.com': 'Exame',
+      'ipsos.com': 'Ipsos', 'iclnoticias.com.br': 'ICL Notícias', 'jovempan.com.br': 'Jovem Pan',
+      'prt2.mpt.mp.br': 'MPT', 'planalto.gov.br': 'Planalto', 'ticotimes.net': 'Tico Times',
+      'brasil.elpais.com': 'El País', 'camara.leg.br': 'Câmara dos Deputados', 'senado.leg.br': 'Agência Senado',
+      'noticias.stf.jus.br': 'STF', 'cartacapital.com.br': 'CartaCapital', 'infomoney.com.br': 'InfoMoney',
+      'pt.euronews.com': 'Euronews', 'observador.pt': 'Observador', 'gazetadopovo.com.br': 'Gazeta do Povo',
+      'abcnews.com': 'ABC News'
+    };
+
+    function sourceName(url) {
+      var host = new URL(url).hostname.replace(/^www\d*\./, '');
+      return SOURCE_NAMES[host] || host;
+    }
+
+    // Ajusta o tamanho da fonte para todo o conteúdo caber no quadrado
+    function fitSlide(dlg) {
+      var slide = dlg.querySelector('.slide');
+      var style = getComputedStyle(dlg);
+      var avail = dlg.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      var size = dlg.clientWidth * 0.042;
+      dlg.style.fontSize = size + 'px';
+      while (slide.scrollHeight > avail && size > 6) {
+        size -= 0.25;
+        dlg.style.fontSize = size + 'px';
+      }
+    }
+
+    function openSlide(dlg) {
+      if (!dlg.open) dlg.showModal();
+      fitSlide(dlg);
+    }
+
+    // Todo o conteúdo do modal (menos o botão de fechar) fica dentro de .slide
+    document.querySelectorAll('dialog').forEach(function (dlg) {
+      var slide = document.createElement('div');
+      slide.className = 'slide';
+      Array.prototype.slice.call(dlg.children).forEach(function (el) {
+        if (!el.classList.contains('modal-close')) slide.appendChild(el);
+      });
+      dlg.appendChild(slide);
+    });
+
+    // Eventos que eram só link passam a abrir o modal genérico
+    document.querySelectorAll('.card').forEach(function (card) {
+      if (card.querySelector('.open-modal')) return;
+      var titles = [];
+      card.querySelectorAll('a > .title').forEach(function (t) {
+        titles.push({ text: t.textContent, href: t.parentNode.href });
+      });
+      var sources = [];
+      var sourceLinks = card.querySelectorAll('.sources a');
+      if (sourceLinks.length) {
+        sourceLinks.forEach(function (a) { sources.push({ text: a.textContent, href: a.href }); });
+      } else {
+        titles.forEach(function (t) { sources.push({ text: sourceName(t.href), href: t.href }); });
+      }
+      var date = card.querySelector('.date').textContent;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'open-modal';
+      btn.dataset.modal = 'modal-auto';
+      btn.dataset.href = titles[0].href;
+      btn.autoData = { titles: titles, sources: sources };
+      titles.forEach(function (t) {
+        var div = document.createElement('div');
+        div.className = 'title';
+        div.textContent = t.text;
+        btn.appendChild(div);
+      });
+      var d = document.createElement('div');
+      d.className = 'date';
+      d.textContent = date;
+      btn.appendChild(d);
+      card.innerHTML = '';
+      card.appendChild(btn);
+    });
+
     document.querySelectorAll('.open-modal').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        document.getElementById(btn.dataset.modal).showModal();
+        var dlg = document.getElementById(btn.dataset.modal);
+        var date = btn.querySelector('.date').textContent;
+
+        if (btn.autoData) {
+          var titles = dlg.querySelector('.auto-titles');
+          titles.innerHTML = '';
+          btn.autoData.titles.forEach(function (t) {
+            var p = document.createElement('p');
+            p.className = 'modal-title';
+            p.textContent = t.text;
+            titles.appendChild(p);
+          });
+          var list = dlg.querySelector('.auto-sources');
+          list.innerHTML = '';
+          btn.autoData.sources.forEach(function (src) {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = src.href;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = src.text;
+            li.appendChild(a);
+            list.appendChild(li);
+          });
+          dlg.querySelector('.modal-date').textContent = date;
+        } else if (!dlg.querySelector('.modal-date')) {
+          // Modais escritos à mão também mostram a data, logo abaixo do título
+          var p = document.createElement('p');
+          p.className = 'modal-date';
+          p.textContent = date;
+          dlg.querySelector('.modal-title').insertAdjacentElement('afterend', p);
+        }
+
+        openSlide(dlg);
       });
     });
 
@@ -1080,28 +1231,28 @@
           .reverse();
 
         events.forEach(function (ev) {
-          var card = ev.querySelector('.card');
-          var modalBtn = card.querySelector('.open-modal');
-          var source = modalBtn
-            ? document.getElementById(modalBtn.dataset.modal).querySelector('a[href]')
-            : card.querySelector('a[href]');
+          var eventBtn = ev.querySelector('.open-modal');
+          var href = eventBtn.dataset.href ||
+            document.getElementById(eventBtn.dataset.modal).querySelector('a[href]').href;
 
           var li = document.createElement('li');
           var link = document.createElement('a');
-          link.href = source.href;
+          link.href = href;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.className = 'title';
-          link.textContent = card.querySelector('.title').textContent;
+          link.textContent = Array.prototype.map.call(eventBtn.querySelectorAll('.title'), function (t) {
+            return t.textContent;
+          }).join(' / ');
           var date = document.createElement('div');
           date.className = 'date';
-          date.textContent = card.querySelector('.date').textContent;
+          date.textContent = eventBtn.querySelector('.date').textContent;
           li.appendChild(link);
           li.appendChild(date);
           list.appendChild(li);
         });
 
-        dlg.showModal();
+        openSlide(dlg);
       });
     });
 
@@ -1111,8 +1262,14 @@
       });
       // Fecha ao clicar fora da caixa
       dlg.addEventListener('click', function (e) {
-        if (e.target === dlg) dlg.close();
+        var r = dlg.getBoundingClientRect();
+        var inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        if (e.target === dlg && !inside) dlg.close();
       });
+    });
+
+    window.addEventListener('resize', function () {
+      document.querySelectorAll('dialog[open]').forEach(fitSlide);
     });
   </script>
 </body>
