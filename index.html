@@ -229,6 +229,57 @@
       color: #f2f2f2;
     }
 
+    /* Modal com vários slides (carrossel): arrastar, deslizar ou usar as setas */
+    .pages {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .page {
+      flex: 0 0 100%;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .page-content { width: 100%; }
+
+    .page-media .page-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .page-media img,
+    .page-media video {
+      display: block;
+      max-width: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .page-counter {
+      position: absolute;
+      right: 14px;
+      bottom: 16px;
+      font: 600 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: 0.06em;
+      color: #a6a6a6;
+    }
+
+    dialog.has-pages .save-post { right: 56px; }
+
     /* Botão que baixa o modal como imagem (não aparece na imagem) */
     .save-post {
       position: absolute;
@@ -1605,22 +1656,33 @@
 
   <dialog id="modal-vorcaro-agencia" aria-labelledby="modal-vorcaro-agencia-title">
     <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
-    <p class="modal-title" id="modal-vorcaro-agencia-title">VORCARO ERA SÓCIO OCULTO DE AGÊNCIA DE PROSTITUIÇÃO E RECRUTOU REFUGIADAS</p>
-    <h2>RESUMO</h2>
-    <ul>
-      <li>Segundo a coluna de Natália Portinari no UOL, Daniel Vorcaro era sócio oculto de uma agência de prostituição e recrutou refugiadas</li>
-      <li>A reportagem saiu no mesmo dia em que outra coluna do UOL relatou mensagens que citam o ministro Kassio Nunes Marques em festa de Vorcaro</li>
-      <li>Reprodução de mensagens de 7 de novembro de 2023 entre Vorcaro e Diogo Batista, em que falam de "refugiadas" ucranianas</li>
-    </ul>
-    <img class="modal-img" src="images/vorcaro-mensagens-refugiadas-2023.webp" alt="Reprodução de conversa de 7 de novembro de 2023 entre Diogo Batista e Daniel Vorcaro sobre refugiadas ucranianas">
-    <h2>ENVOLVIDOS</h2>
-    <ul>
-      <li><button type="button" class="person" data-person="daniel-vorcaro">Daniel Vorcaro</button></li>
-    </ul>
-    <h2>FONTES</h2>
-    <ul>
-      <li><a href="https://noticias.uol.com.br/colunas/natalia-portinari/2026/10/13/vorcaro-era-socio-oculto-de-agencia-de-prostituicao-e-recrutou-refugiadas.htm" target="_blank" rel="noopener noreferrer">UOL (coluna Natália Portinari)</a></li>
-    </ul>
+    <div class="page">
+      <p class="modal-title" id="modal-vorcaro-agencia-title">VORCARO ERA SÓCIO OCULTO DE AGÊNCIA DE PROSTITUIÇÃO E RECRUTOU REFUGIADAS</p>
+      <h2>RESUMO</h2>
+      <ul>
+        <li>Segundo a coluna de Natália Portinari no UOL, Daniel Vorcaro era sócio oculto de uma agência de prostituição e recrutou refugiadas</li>
+        <li>A reportagem saiu no mesmo dia em que outra coluna do UOL relatou mensagens que citam o ministro Kassio Nunes Marques em festa de Vorcaro</li>
+        <li>Slide 2: reprodução de mensagens de 7 de novembro de 2023 entre Vorcaro e Diogo Batista, em que falam de "refugiadas" ucranianas</li>
+        <li>Slide 3: vídeo com áudio enviado por Diogo Batista a Vorcaro</li>
+      </ul>
+      <h2>ENVOLVIDOS</h2>
+      <ul>
+        <li><button type="button" class="person" data-person="daniel-vorcaro">Daniel Vorcaro</button></li>
+      </ul>
+      <h2>FONTES</h2>
+      <ul>
+        <li><a href="https://noticias.uol.com.br/colunas/natalia-portinari/2026/10/13/vorcaro-era-socio-oculto-de-agencia-de-prostituicao-e-recrutou-refugiadas.htm" target="_blank" rel="noopener noreferrer">UOL (coluna Natália Portinari)</a></li>
+      </ul>
+    </div>
+    <div class="page page-media">
+      <img src="images/vorcaro-mensagens-refugiadas-2023.webp" alt="Reprodução de conversa de 7 de novembro de 2023 entre Diogo Batista e Daniel Vorcaro sobre refugiadas ucranianas">
+    </div>
+    <div class="page page-media">
+      <video poster="videos/vorcaro-pede-permissao-banheiro.jpg" controls playsinline preload="metadata">
+        <source src="videos/vorcaro-pede-permissao-banheiro.mp4" type="video/mp4">
+        <source src="videos/vorcaro-pede-permissao-banheiro.webm" type="video/webm">
+      </video>
+    </div>
   </dialog>
 
   <!-- Modal genérico: preenchido pelo script com título, data e fontes do card -->
@@ -1662,12 +1724,32 @@
 
     // Ajusta o tamanho da fonte para todo o conteúdo caber no quadrado
     function fitSlide(dlg) {
+      if (dlg.pageCount) return fitPages(dlg);
       var slide = dlg.querySelector('.slide');
       var style = getComputedStyle(dlg);
       var avail = dlg.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
       var size = dlg.clientWidth * 0.042;
       dlg.style.fontSize = size + 'px';
       while (slide.scrollHeight > avail && size > 6) {
+        size -= 0.25;
+        dlg.style.fontSize = size + 'px';
+      }
+    }
+
+    // Carrossel: mesma fonte em todos os slides de texto; mídia ocupa o slide inteiro
+    function fitPages(dlg) {
+      var pages = dlg.querySelector('.pages');
+      var avail = pages.clientHeight;
+      dlg.querySelectorAll('.page-media img, .page-media video').forEach(function (m) {
+        m.style.maxHeight = avail + 'px';
+      });
+      var texts = dlg.querySelectorAll('.page:not(.page-media) .page-content');
+      var size = dlg.clientWidth * 0.042;
+      dlg.style.fontSize = size + 'px';
+      function tooTall() {
+        return Array.prototype.some.call(texts, function (c) { return c.offsetHeight > avail; });
+      }
+      while (tooTall() && size > 6) {
         size -= 0.25;
         dlg.style.fontSize = size + 'px';
       }
@@ -1681,8 +1763,65 @@
       });
     }
 
-    // Todo o conteúdo do modal (menos o botão de fechar) fica dentro de .slide
+    // Modais com .page viram carrossel; os demais têm todo o conteúdo dentro de .slide
+    function goToPage(dlg, i) {
+      var n = dlg.pageCount;
+      dlg.pageIndex = Math.max(0, Math.min(n - 1, i));
+      dlg.querySelector('.track').style.transform = 'translateX(' + (-100 * dlg.pageIndex) + '%)';
+      dlg.querySelector('.page-counter').textContent = (dlg.pageIndex + 1) + '/' + n;
+      dlg.querySelectorAll('.page video').forEach(function (v) { v.pause(); });
+    }
+
     document.querySelectorAll('dialog').forEach(function (dlg) {
+      var pageEls = Array.prototype.slice.call(dlg.children).filter(function (el) {
+        return el.classList.contains('page');
+      });
+      if (!pageEls.length) return;
+      dlg.classList.add('has-pages');
+      var pages = document.createElement('div');
+      pages.className = 'pages';
+      var track = document.createElement('div');
+      track.className = 'track';
+      pageEls.forEach(function (page) {
+        var content = document.createElement('div');
+        content.className = 'page-content';
+        while (page.firstChild) content.appendChild(page.firstChild);
+        page.appendChild(content);
+        track.appendChild(page);
+      });
+      pages.appendChild(track);
+      dlg.appendChild(pages);
+      var counter = document.createElement('div');
+      counter.className = 'page-counter';
+      dlg.appendChild(counter);
+      dlg.pageCount = pageEls.length;
+      goToPage(dlg, 0);
+
+      // Arrastar com o mouse ou deslizar com o dedo
+      var startX = null;
+      pages.addEventListener('pointerdown', function (e) {
+        if (e.target.closest('video')) return;
+        startX = e.clientX;
+      });
+      pages.addEventListener('pointerup', function (e) {
+        if (startX === null) return;
+        var dx = e.clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 40) goToPage(dlg, dlg.pageIndex + (dx < 0 ? 1 : -1));
+      });
+      pages.addEventListener('pointercancel', function () { startX = null; });
+      dlg.addEventListener('close', function () { goToPage(dlg, 0); });
+    });
+
+    document.addEventListener('keydown', function (e) {
+      var open = document.querySelectorAll('dialog[open]');
+      var dlg = open[open.length - 1];
+      if (!dlg || !dlg.pageCount) return;
+      if (e.key === 'ArrowRight') goToPage(dlg, dlg.pageIndex + 1);
+      if (e.key === 'ArrowLeft') goToPage(dlg, dlg.pageIndex - 1);
+    });
+
+    document.querySelectorAll('dialog:not(.has-pages)').forEach(function (dlg) {
       var slide = document.createElement('div');
       slide.className = 'slide';
       Array.prototype.slice.call(dlg.children).forEach(function (el) {
@@ -1841,13 +1980,41 @@
           scale: 1080 / dlg.offsetWidth,
           logging: false,
           ignoreElements: function (el) {
-            return el.classList && (el.classList.contains('modal-close') || el.classList.contains('save-post'));
+            return el.classList && (el.classList.contains('modal-close') || el.classList.contains('save-post') ||
+              el.classList.contains('page-counter'));
+          },
+          // Vídeo não é desenhado pelo html2canvas: troca pelo quadro atual (ou pela capa)
+          onclone: function (doc) {
+            var originals = dlg.querySelectorAll('video');
+            doc.getElementById(dlg.id).querySelectorAll('video').forEach(function (clone, i) {
+              var v = originals[i];
+              var img = doc.createElement('img');
+              img.style.cssText = v.style.cssText;
+              img.style.width = v.clientWidth + 'px';
+              img.style.height = v.clientHeight + 'px';
+              img.style.objectFit = 'contain';
+              img.style.background = '#000';
+              try {
+                if (v.readyState >= 2) {
+                  var c = document.createElement('canvas');
+                  c.width = v.videoWidth;
+                  c.height = v.videoHeight;
+                  c.getContext('2d').drawImage(v, 0, 0);
+                  img.src = c.toDataURL('image/jpeg', 0.9);
+                } else {
+                  img.src = v.poster;
+                }
+              } catch (err) {
+                img.src = v.poster;
+              }
+              clone.replaceWith(img);
+            });
           }
         }).then(function (canvas) {
           canvas.toBlob(function (blob) {
             var a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = fileName(dlg);
+            a.download = fileName(dlg).replace(/\.png$/, dlg.pageCount ? '-' + (dlg.pageIndex + 1) + '.png' : '.png');
             document.body.appendChild(a);
             a.click();
             a.remove();
