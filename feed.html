@@ -16,34 +16,29 @@
 
     a { color: inherit; }
 
-    /* Feed: uma coluna de posts, do mais recente para o mais antigo */
-    .feed {
-      list-style: none;
-      max-width: 520px;
+    /* Telas: feed e perfil */
+    .view {
+      max-width: 600px;
       margin: 0 auto;
-      padding: 16px 16px 48px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
     }
 
-    .post {
-      background: #141414;
-      border: 1px solid #262626;
-      border-radius: 10px;
-      overflow: hidden;
-    }
+    .view[hidden] { display: none; }
 
-    .post-head {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 14px 16px;
+      background: #0d0d0d;
+      border-bottom: 1px solid #262626;
+      font-size: 17px;
+      font-weight: 800;
     }
 
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
       background: #fff;
@@ -51,27 +46,43 @@
     }
 
     .username {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
     }
 
-    /* Corpo quadrado do slide */
-    .slide-box {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #0d0d0d;
-      border-top: 1px solid #262626;
+    /* Post de texto: abre os slides em tela cheia */
+    .posts { list-style: none; }
+
+    .tpost {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
       border-bottom: 1px solid #262626;
       cursor: pointer;
-      overflow: hidden;
     }
 
-    .post-foot {
+    .tpost:hover,
+    .tpost:focus-visible {
+      background: #141414;
+      outline: none;
+    }
+
+    .tpost .t-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tpost .t-text {
+      margin: 4px 0 10px;
+      font-size: 16px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .tpost .t-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
       font-size: 13px;
       color: #9a9a9a;
     }
@@ -90,7 +101,100 @@
       height: 12px;
       border: 2px solid currentColor;
       border-radius: 2px;
-      box-shadow: 3px -3px 0 -1px #141414, 3px -3px 0 1px currentColor;
+      box-shadow: 3px -3px 0 -1px #0d0d0d, 3px -3px 0 1px currentColor;
+    }
+
+    /* Perfil */
+    .profile-head {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 20px 16px 8px;
+    }
+
+    .profile-head .avatar {
+      width: 86px;
+      height: 86px;
+    }
+
+    .stats {
+      flex: 1;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .stats b {
+      display: block;
+      font-size: 18px;
+    }
+
+    .stats span {
+      font-size: 13px;
+      color: #cfcfcf;
+    }
+
+    .profile-name {
+      padding: 4px 16px 16px;
+      border-bottom: 1px solid #262626;
+    }
+
+    /* Menu fixo */
+    .nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 15;
+      display: flex;
+      height: calc(56px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: #0d0d0d;
+      border-top: 1px solid #262626;
+    }
+
+    .nav button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: 0;
+      color: #8a8a8a;
+      cursor: pointer;
+    }
+
+    .nav button[aria-current="page"] { color: #f2f2f2; }
+
+    .nav svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .nav .avatar {
+      width: 28px;
+      height: 28px;
+      border: 2px solid transparent;
+    }
+
+    .nav button[aria-current="page"] .avatar { border-color: #f2f2f2; }
+
+    .icon-btn {
+      background: none;
+      border: 0;
+      color: #f2f2f2;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    /* Quadro dos slides em tela cheia */
+    .slide-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
     }
 
     /* Conteúdo dos slides (feed e stories) */
@@ -163,44 +267,6 @@
       height: 100%;
       object-fit: contain;
       display: block;
-    }
-
-    /* Post aberto: os slides empilhados como posts do feed */
-    .thread {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      background: #0d0d0d;
-      overflow-y: auto;
-      display: none;
-    }
-
-    .thread.open { display: block; }
-
-    .thread-bar {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 12px 16px;
-      background: #0d0d0d;
-      border-bottom: 1px solid #262626;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .icon-btn {
-      background: none;
-      border: 0;
-      color: #f2f2f2;
-      font-size: 26px;
-      line-height: 1;
-      cursor: pointer;
-      padding: 0 4px;
     }
 
     /* Stories em tela cheia */
@@ -281,12 +347,6 @@
       align-items: center;
     }
 
-    .story-stage .slide-box {
-      cursor: default;
-      border: 0;
-      background: transparent;
-    }
-
     .story-stage .slide { font-size: 18px; }
 
     .loading {
@@ -297,16 +357,33 @@
   </style>
 </head>
 <body>
-  <ol class="feed" id="feed"><li class="loading">Carregando…</li></ol>
+  <section class="view" id="view-feed" aria-label="Feed">
+    <div class="topbar">Feed</div>
+    <ol class="posts" id="feed"><li class="loading">Carregando…</li></ol>
+  </section>
 
-  <!-- Post aberto -->
-  <div class="thread" id="thread" role="dialog" aria-modal="true" aria-labelledby="thread-title">
-    <div class="thread-bar">
-      <button type="button" class="icon-btn" id="thread-close" aria-label="Voltar">&larr;</button>
-      <span id="thread-title">Publicação</span>
+  <section class="view" id="view-profile" aria-label="Perfil" hidden>
+    <div class="topbar">purojuiceamericamemes</div>
+    <div class="profile-head">
+      <img class="avatar" src="images/avatar-purojuiceamericamemes.jpg" alt="Foto de perfil de purojuiceamericamemes">
+      <div class="stats">
+        <div><b id="post-count">0</b><span>publicações</span></div>
+        <div><b>0</b><span>seguidores</span></div>
+        <div><b>0</b><span>seguindo</span></div>
+      </div>
     </div>
-    <ol class="feed" id="thread-list"></ol>
-  </div>
+    <div class="profile-name username">purojuiceamericamemes</div>
+    <ol class="posts" id="profile-feed"></ol>
+  </section>
+
+  <nav class="nav" aria-label="Menu">
+    <button type="button" id="nav-feed" aria-label="Feed" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
+    </button>
+    <button type="button" id="nav-profile" aria-label="Perfil">
+      <img class="avatar" src="images/avatar-purojuiceamericamemes.jpg" alt="">
+    </button>
+  </nav>
 
   <!-- Stories -->
   <div class="stories" id="stories" role="dialog" aria-modal="true" aria-label="Stories">
@@ -491,77 +568,67 @@
       }
     }
 
-    function postCard(ev, slideIdx, onOpen, inThread) {
-      var li = el('li', 'post');
-      var head = el('div', 'post-head');
+    function textPost(ev) {
+      var li = el('li', 'tpost');
+      li.setAttribute('role', 'button');
+      li.setAttribute('tabindex', '0');
       var av = el('img', 'avatar');
       av.src = AVATAR;
       av.alt = '';
-      head.appendChild(av);
-      head.appendChild(el('span', 'username', USER));
-      li.appendChild(head);
-
-      var box = renderSlide(ev, ev.slides[slideIdx]);
-      box.setAttribute('role', 'button');
-      box.setAttribute('tabindex', '0');
-      box.setAttribute('aria-label', slideIdx === 0 ? 'Abrir: ' + ev.title : 'Abrir slide ' + (slideIdx + 1));
-      box.addEventListener('click', onOpen);
-      box.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); }
+      li.appendChild(av);
+      var body = el('div', 't-body');
+      body.appendChild(el('div', 'username', USER));
+      body.appendChild(el('div', 't-text', ev.title));
+      var meta = el('div', 't-meta');
+      meta.appendChild(el('span', null, ev.date));
+      meta.appendChild(el('span', 'count', String(ev.slides.length)));
+      body.appendChild(meta);
+      li.appendChild(body);
+      var open = function () { openStories(ev, 0); };
+      li.addEventListener('click', open);
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
       });
-      li.appendChild(box);
-
-      var foot = el('div', 'post-foot');
-      foot.appendChild(el('span', null, ev.date));
-      var n = ev.slides.length;
-      foot.appendChild(el('span', 'count', inThread ? (slideIdx + 1) + '/' + n : String(n)));
-      li.appendChild(foot);
       return li;
     }
 
-    // ---------- Feed principal ----------
+    // ---------- Feed e perfil ----------
 
     var EVENTS = [];
     var feed = document.getElementById('feed');
+    var profileFeed = document.getElementById('profile-feed');
 
-    function renderFeed() {
+    function renderLists() {
       feed.innerHTML = '';
+      profileFeed.innerHTML = '';
       EVENTS.slice().reverse().forEach(function (ev) {
-        feed.appendChild(postCard(ev, 0, function () { openThread(ev); }));
+        feed.appendChild(textPost(ev));
+        profileFeed.appendChild(textPost(ev));
       });
-      fitAll(feed);
+      document.getElementById('post-count').textContent = EVENTS.length;
     }
 
-    function fitAll(root) {
-      root.querySelectorAll('.slide-box').forEach(fit);
+    function route() {
+      var profile = location.hash === '#perfil';
+      document.getElementById('view-feed').hidden = profile;
+      document.getElementById('view-profile').hidden = !profile;
+      document.getElementById('nav-feed').toggleAttribute('aria-current', !profile);
+      document.getElementById('nav-profile').toggleAttribute('aria-current', profile);
+      if (!profile) document.getElementById('nav-feed').setAttribute('aria-current', 'page');
+      else document.getElementById('nav-profile').setAttribute('aria-current', 'page');
+      window.scrollTo(0, 0);
     }
 
-    // ---------- Post aberto ----------
-
-    var thread = document.getElementById('thread');
-    var threadList = document.getElementById('thread-list');
-    var feedScroll = 0;
-
-    function openThread(ev) {
-      feedScroll = window.scrollY;
-      threadList.innerHTML = '';
-      ev.slides.forEach(function (_, i) {
-        threadList.appendChild(postCard(ev, i, function () { openStories(ev, i); }, true));
-      });
-      thread.classList.add('open');
-      thread.scrollTop = 0;
-      document.body.style.overflow = 'hidden';
-      fitAll(threadList);
-    }
-
-    function closeThread() {
-      threadList.querySelectorAll('video').forEach(function (v) { v.pause(); });
-      thread.classList.remove('open');
-      document.body.style.overflow = '';
-      window.scrollTo(0, feedScroll);
-    }
-
-    document.getElementById('thread-close').addEventListener('click', closeThread);
+    document.getElementById('nav-feed').addEventListener('click', function () {
+      if (location.hash === '#perfil') location.hash = '';
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.getElementById('nav-profile').addEventListener('click', function () {
+      if (location.hash !== '#perfil') location.hash = 'perfil';
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('hashchange', route);
+    route();
 
     // ---------- Stories ----------
 
@@ -732,13 +799,12 @@
         if (e.key === 'ArrowRight') next();
         else if (e.key === 'ArrowLeft') prev();
         else if (e.key === 'Escape') closeStories();
-      } else if (thread.classList.contains('open') && e.key === 'Escape') {
-        closeThread();
       }
     });
 
     window.addEventListener('resize', function () {
-      fitAll(document);
+      var box = stage.querySelector('.slide-box');
+      if (box) fit(box);
     });
 
     // ---------- Início ----------
@@ -748,7 +814,7 @@
       .then(function (html) {
         var doc = new DOMParser().parseFromString(html, 'text/html');
         EVENTS = parseEvents(doc);
-        renderFeed();
+        renderLists();
       })
       .catch(function () {
         feed.innerHTML = '<li class="loading">Não foi possível carregar as notícias.</li>';
