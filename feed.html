@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Timeline em feed</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d0d0d;
+      color: #f2f2f2;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+
+    /* Feed: uma coluna de posts, do mais recente para o mais antigo */
+    .feed {
+      list-style: none;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .post {
+      background: #141414;
+      border: 1px solid #262626;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .post-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #fff;
+      flex: none;
+    }
+
+    .username {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* Corpo quadrado do slide */
+    .slide-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #0d0d0d;
+      border-top: 1px solid #262626;
+      border-bottom: 1px solid #262626;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .post-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #9a9a9a;
+    }
+
+    .count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: #f2f2f2;
+    }
+
+    .count::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-radius: 2px;
+      box-shadow: 3px -3px 0 -1px #141414, 3px -3px 0 1px currentColor;
+    }
+
+    /* Conteúdo dos slides (feed e stories) */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 9%;
+      font-size: 16px;
+      line-height: 1.3;
+      overflow: hidden;
+    }
+
+    .slide.cover .s-title {
+      font-size: 1.9em;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+    }
+
+    .slide .s-date {
+      margin-top: 0.8em;
+      font-size: 0.95em;
+      color: #9a9a9a;
+    }
+
+    .slide .s-kicker {
+      font-size: 0.75em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #9a9a9a;
+      margin-bottom: 0.8em;
+    }
+
+    .slide.text .s-text {
+      font-size: 1.45em;
+      line-height: 1.35;
+    }
+
+    .slide.list ul {
+      list-style: none;
+      margin-bottom: 1em;
+    }
+
+    .slide.list li {
+      font-size: 1.05em;
+      margin-bottom: 0.35em;
+    }
+
+    .slide.list li::before {
+      content: "• ";
+      color: #9a9a9a;
+    }
+
+    .slide.list a {
+      text-decoration: underline;
+    }
+
+    .slide.media {
+      padding: 0;
+      align-items: center;
+      background: #000;
+    }
+
+    .slide.media img,
+    .slide.media video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Post aberto: os slides empilhados como posts do feed */
+    .thread {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: #0d0d0d;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .thread.open { display: block; }
+
+    .thread-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      background: #0d0d0d;
+      border-bottom: 1px solid #262626;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .icon-btn {
+      background: none;
+      border: 0;
+      color: #f2f2f2;
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    /* Stories em tela cheia */
+    .stories {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .stories.open { display: flex; }
+
+    .story-frame {
+      position: relative;
+      width: min(100vw, calc(100vh * 9 / 16));
+      height: 100vh;
+      height: 100dvh;
+      background: #0d0d0d;
+      overflow: hidden;
+    }
+
+    .story-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      padding: max(10px, env(safe-area-inset-top)) 12px 12px;
+      background: linear-gradient(#000c, #0000);
+    }
+
+    .bars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .bar {
+      flex: 1;
+      height: 3px;
+      border-radius: 2px;
+      background: #ffffff4d;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: #fff;
+    }
+
+    .bar.done i { width: 100%; }
+
+    .story-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .story-head .s-meta {
+      font-size: 13px;
+      color: #cfcfcf;
+    }
+
+    .story-head .icon-btn { margin-left: auto; }
+
+    .story-stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .story-stage .slide-box {
+      cursor: default;
+      border: 0;
+      background: transparent;
+    }
+
+    .story-stage .slide { font-size: 18px; }
+
+    .loading {
+      text-align: center;
+      padding: 40px 16px;
+      color: #9a9a9a;
+    }
+  </style>
+</head>
+<body>
+  <ol class="feed" id="feed"><li class="loading">Carregando…</li></ol>
+
+  <!-- Post aberto -->
+  <div class="thread" id="thread" role="dialog" aria-modal="true" aria-labelledby="thread-title">
+    <div class="thread-bar">
+      <button type="button" class="icon-btn" id="thread-close" aria-label="Voltar">&larr;</button>
+      <span id="thread-title">Publicação</span>
+    </div>
+    <ol class="feed" id="thread-list"></ol>
+  </div>
+
+  <!-- Stories -->
+  <div class="stories" id="stories" role="dialog" aria-modal="true" aria-label="Stories">
+    <div class="story-frame">
+      <div class="story-stage" id="story-stage"></div>
+      <div class="story-top">
+        <div class="bars" id="bars"></div>
+        <div class="story-head">
+          <img class="avatar" src="images/avatar-purojuiceamericamemes.jpg" alt="">
+          <div>
+            <div class="username">purojuiceamericamemes</div>
+            <div class="s-meta" id="story-meta"></div>
+          </div>
+          <button type="button" class="icon-btn" id="story-close" aria-label="Fechar">&times;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var USER = 'purojuiceamericamemes';
+    var AVATAR = 'images/avatar-purojuiceamericamemes.jpg';
+    var STORY_MS = 8000;
+
+    var SOURCE_NAMES = {
+      'bbc.com': 'BBC', 'g1.globo.com': 'g1', 'oglobo.globo.com': 'O Globo', 'valor.globo.com': 'Valor',
+      'folha.uol.com.br': 'Folha', 'noticias.uol.com.br': 'UOL', 'economia.uol.com.br': 'UOL',
+      'pt.wikipedia.org': 'Wikipédia', 'en.wikipedia.org': 'Wikipédia (inglês)',
+      'cnnbrasil.com.br': 'CNN Brasil', 'estadao.com.br': 'Estadão', 'metropoles.com': 'Metrópoles',
+      'veja.abril.com.br': 'Veja', 'youtu.be': 'YouTube', 'youtube.com': 'YouTube', 'exame.com': 'Exame'
+    };
+
+    function sourceName(url) {
+      try {
+        var host = new URL(url).hostname.replace(/^www\d*\./, '');
+        return SOURCE_NAMES[host] || host;
+      } catch (e) { return url; }
+    }
+
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    // ---------- Leitura das notícias a partir da timeline (index.html) ----------
+
+    function listAfter(root, heading) {
+      var h = Array.prototype.find.call(root.querySelectorAll('h2'), function (x) {
+        return x.textContent.trim().toUpperCase() === heading;
+      });
+      var ul = h && h.nextElementSibling;
+      return ul && ul.tagName === 'UL' ? Array.prototype.slice.call(ul.children) : [];
+    }
+
+    function parseEvents(doc) {
+      return Array.prototype.map.call(doc.querySelectorAll('.timeline > .event'), function (li) {
+        var ev = {
+          title: li.querySelector('.title').textContent.trim(),
+          date: (li.querySelector('.date') || { textContent: '' }).textContent.trim(),
+          resumo: [], media: [], envolvidos: [], fontes: []
+        };
+        var btn = li.querySelector('.open-modal');
+        var dlg = btn && doc.getElementById(btn.dataset.modal);
+
+        if (dlg) {
+          ev.resumo = listAfter(dlg, 'RESUMO').map(function (x) { return x.textContent.trim(); });
+          ev.envolvidos = listAfter(dlg, 'ENVOLVIDOS').map(function (x) { return x.textContent.replace(/\s+/g, ' ').trim(); });
+          ev.fontes = listAfter(dlg, 'FONTES').map(function (x) {
+            var a = x.querySelector('a');
+            return { label: x.textContent.trim(), href: a ? a.getAttribute('href') : null };
+          });
+          dlg.querySelectorAll('img').forEach(function (img) {
+            ev.media.push({ type: 'img', src: img.getAttribute('src'), alt: img.getAttribute('alt') || '' });
+          });
+          dlg.querySelectorAll('video').forEach(function (v) {
+            ev.media.push({
+              type: 'video',
+              poster: v.getAttribute('poster'),
+              sources: Array.prototype.map.call(v.querySelectorAll('source'), function (s) {
+                return { src: s.getAttribute('src'), type: s.getAttribute('type') };
+              })
+            });
+          });
+        } else {
+          var seen = {};
+          li.querySelectorAll('.card a[href]').forEach(function (a) {
+            var href = a.getAttribute('href');
+            if (seen[href]) return;
+            seen[href] = true;
+            var isTitle = !!a.querySelector('.title');
+            ev.fontes.push({ label: isTitle ? sourceName(href) : a.textContent.trim(), href: href });
+          });
+        }
+        ev.slides = buildSlides(ev);
+        return ev;
+      });
+    }
+
+    // Capa, um slide por tópico do resumo, imagens/vídeos e, por fim, envolvidos e fontes
+    function buildSlides(ev) {
+      var s = [{ kind: 'cover' }];
+      ev.resumo.forEach(function (t) { s.push({ kind: 'text', text: t }); });
+      ev.media.forEach(function (m) { s.push({ kind: 'media', media: m }); });
+      if (ev.envolvidos.length || ev.fontes.length) s.push({ kind: 'list' });
+      return s;
+    }
+
+    // ---------- Desenho dos slides ----------
+
+    function renderSlide(ev, slide, opts) {
+      var box = el('div', 'slide-box');
+      var inner = el('div', 'slide ' + slide.kind);
+
+      if (slide.kind === 'cover') {
+        inner.appendChild(el('div', 's-title', ev.title));
+      } else if (slide.kind === 'text') {
+        inner.appendChild(el('div', 's-kicker', 'RESUMO'));
+        inner.appendChild(el('div', 's-text', slide.text));
+      } else if (slide.kind === 'media') {
+        var m = slide.media;
+        if (m.type === 'img') {
+          var img = el('img');
+          img.src = m.src;
+          img.alt = m.alt;
+          img.loading = 'lazy';
+          inner.appendChild(img);
+        } else {
+          var v = el('video');
+          v.playsInline = true;
+          v.controls = !!(opts && opts.story);
+          v.preload = 'metadata';
+          if (m.poster) v.poster = m.poster;
+          m.sources.forEach(function (src) {
+            var so = el('source');
+            so.src = src.src;
+            if (src.type) so.type = src.type;
+            v.appendChild(so);
+          });
+          inner.appendChild(v);
+        }
+      } else if (slide.kind === 'list') {
+        if (ev.envolvidos.length) {
+          inner.appendChild(el('div', 's-kicker', 'ENVOLVIDOS'));
+          var ul = el('ul');
+          ev.envolvidos.forEach(function (t) { ul.appendChild(el('li', null, t)); });
+          inner.appendChild(ul);
+        }
+        if (ev.fontes.length) {
+          inner.appendChild(el('div', 's-kicker', 'FONTES'));
+          var ul2 = el('ul');
+          ev.fontes.forEach(function (f) {
+            var li = el('li');
+            if (f.href) {
+              var a = el('a', null, f.label);
+              a.href = f.href;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              li.appendChild(a);
+            } else {
+              li.textContent = f.label;
+            }
+            ul2.appendChild(li);
+          });
+          inner.appendChild(ul2);
+        }
+      }
+      box.appendChild(inner);
+      return box;
+    }
+
+    // Diminui a fonte até o texto caber no quadrado, como nos modais da timeline
+    function fit(box) {
+      var inner = box.querySelector('.slide');
+      if (!inner || inner.classList.contains('media')) return;
+      var size = Math.max(12, box.clientWidth / 22);
+      inner.style.fontSize = size + 'px';
+      while (size > 6 && inner.scrollHeight > inner.clientHeight + 1) {
+        size -= 0.5;
+        inner.style.fontSize = size + 'px';
+      }
+    }
+
+    function postCard(ev, slideIdx, onOpen, inThread) {
+      var li = el('li', 'post');
+      var head = el('div', 'post-head');
+      var av = el('img', 'avatar');
+      av.src = AVATAR;
+      av.alt = '';
+      head.appendChild(av);
+      head.appendChild(el('span', 'username', USER));
+      li.appendChild(head);
+
+      var box = renderSlide(ev, ev.slides[slideIdx]);
+      box.setAttribute('role', 'button');
+      box.setAttribute('tabindex', '0');
+      box.setAttribute('aria-label', slideIdx === 0 ? 'Abrir: ' + ev.title : 'Abrir slide ' + (slideIdx + 1));
+      box.addEventListener('click', onOpen);
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); }
+      });
+      li.appendChild(box);
+
+      var foot = el('div', 'post-foot');
+      foot.appendChild(el('span', null, ev.date));
+      var n = ev.slides.length;
+      foot.appendChild(el('span', 'count', inThread ? (slideIdx + 1) + '/' + n : String(n)));
+      li.appendChild(foot);
+      return li;
+    }
+
+    // ---------- Feed principal ----------
+
+    var EVENTS = [];
+    var feed = document.getElementById('feed');
+
+    function renderFeed() {
+      feed.innerHTML = '';
+      EVENTS.slice().reverse().forEach(function (ev) {
+        feed.appendChild(postCard(ev, 0, function () { openThread(ev); }));
+      });
+      fitAll(feed);
+    }
+
+    function fitAll(root) {
+      root.querySelectorAll('.slide-box').forEach(fit);
+    }
+
+    // ---------- Post aberto ----------
+
+    var thread = document.getElementById('thread');
+    var threadList = document.getElementById('thread-list');
+    var feedScroll = 0;
+
+    function openThread(ev) {
+      feedScroll = window.scrollY;
+      threadList.innerHTML = '';
+      ev.slides.forEach(function (_, i) {
+        threadList.appendChild(postCard(ev, i, function () { openStories(ev, i); }, true));
+      });
+      thread.classList.add('open');
+      thread.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+      fitAll(threadList);
+    }
+
+    function closeThread() {
+      threadList.querySelectorAll('video').forEach(function (v) { v.pause(); });
+      thread.classList.remove('open');
+      document.body.style.overflow = '';
+      window.scrollTo(0, feedScroll);
+    }
+
+    document.getElementById('thread-close').addEventListener('click', closeThread);
+
+    // ---------- Stories ----------
+
+    var stories = document.getElementById('stories');
+    var stage = document.getElementById('story-stage');
+    var bars = document.getElementById('bars');
+    var meta = document.getElementById('story-meta');
+    var cur = null, idx = 0, timer = null, startedAt = 0, elapsed = 0, paused = false;
+
+    function openStories(ev, i) {
+      cur = ev;
+      bars.innerHTML = '';
+      ev.slides.forEach(function () {
+        var b = el('div', 'bar');
+        b.appendChild(el('i'));
+        bars.appendChild(b);
+      });
+      stories.classList.add('open');
+      show(i);
+    }
+
+    function closeStories() {
+      stopTimer();
+      stage.querySelectorAll('video').forEach(function (v) { v.pause(); });
+      stories.classList.remove('open');
+      cur = null;
+    }
+
+    function show(i) {
+      stopTimer();
+      stage.querySelectorAll('video').forEach(function (v) { v.pause(); });
+      idx = i;
+      stage.innerHTML = '';
+      var box = renderSlide(cur, cur.slides[i], { story: true });
+      stage.appendChild(box);
+      fit(box);
+      meta.textContent = cur.date + ' · ' + (i + 1) + '/' + cur.slides.length;
+      Array.prototype.forEach.call(bars.children, function (b, k) {
+        b.classList.toggle('done', k < i);
+        b.firstChild.style.transition = 'none';
+        b.firstChild.style.width = k < i ? '100%' : '0';
+      });
+      var video = box.querySelector('video');
+      if (video) {
+        // Vídeo: a barra acompanha o vídeo e avança quando ele termina
+        video.addEventListener('timeupdate', function () {
+          if (video.duration) bars.children[idx].firstChild.style.width = (video.currentTime / video.duration * 100) + '%';
+        });
+        video.addEventListener('ended', next);
+        var p = video.play();
+        if (p && p.catch) p.catch(function () {});
+      } else {
+        elapsed = 0;
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (!cur) return;
+      var fill = bars.children[idx].firstChild;
+      var remaining = STORY_MS - elapsed;
+      startedAt = Date.now();
+      fill.style.transition = 'none';
+      fill.style.width = (elapsed / STORY_MS * 100) + '%';
+      fill.offsetWidth;
+      fill.style.transition = 'width ' + remaining + 'ms linear';
+      fill.style.width = '100%';
+      timer = setTimeout(next, remaining);
+    }
+
+    function stopTimer() {
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    function pause() {
+      if (!timer || paused) return;
+      paused = true;
+      stopTimer();
+      elapsed += Date.now() - startedAt;
+      var fill = bars.children[idx].firstChild;
+      fill.style.transition = 'none';
+      fill.style.width = (elapsed / STORY_MS * 100) + '%';
+    }
+
+    function resume() {
+      if (!paused) return;
+      paused = false;
+      startTimer();
+    }
+
+    function next() {
+      if (!cur) return;
+      if (idx < cur.slides.length - 1) show(idx + 1);
+      else closeStories();
+    }
+
+    function prev() {
+      if (!cur) return;
+      show(Math.max(0, idx - 1));
+    }
+
+    // Toque na esquerda volta, na direita avança; segurar pausa, como nos stories.
+    // Links das fontes, controles do vídeo e o botão de fechar continuam clicáveis.
+    var frame = stories.querySelector('.story-frame');
+    var downAt = 0, downX = 0, tracking = false;
+
+    frame.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('a, video, button')) return;
+      tracking = true;
+      downAt = Date.now();
+      downX = e.clientX;
+      pause();
+    });
+
+    frame.addEventListener('pointerup', function (e) {
+      if (!tracking) return;
+      tracking = false;
+      if (Date.now() - downAt > 300) { resume(); return; }
+      paused = false;
+      var r = frame.getBoundingClientRect();
+      if (downX - r.left < r.width * 0.35) prev();
+      else next();
+    });
+
+    frame.addEventListener('pointercancel', function () {
+      if (tracking) { tracking = false; resume(); }
+    });
+
+    document.getElementById('story-close').addEventListener('click', closeStories);
+
+    document.addEventListener('keydown', function (e) {
+      if (stories.classList.contains('open')) {
+        if (e.key === 'ArrowRight') next();
+        else if (e.key === 'ArrowLeft') prev();
+        else if (e.key === 'Escape') closeStories();
+      } else if (thread.classList.contains('open') && e.key === 'Escape') {
+        closeThread();
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      fitAll(document);
+    });
+
+    // ---------- Início ----------
+
+    fetch('index.html')
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        EVENTS = parseEvents(doc);
+        renderFeed();
+      })
+      .catch(function () {
+        feed.innerHTML = '<li class="loading">Não foi possível carregar as notícias.</li>';
+      });
+  </script>
+</body>
+</html>
