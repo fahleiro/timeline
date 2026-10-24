@@ -219,6 +219,7 @@
     .stories.open { display: flex; }
 
     .story-frame {
+      touch-action: none;
       position: relative;
       width: min(100vw, calc(100vh * 9 / 16));
       height: 100vh;
@@ -664,22 +665,52 @@
     }
 
     // Toque na esquerda volta, na direita avança; segurar pausa, como nos stories.
+    // Arrastar para baixo a partir da metade de cima fecha a tela cheia.
     // Links das fontes, controles do vídeo e o botão de fechar continuam clicáveis.
     var frame = stories.querySelector('.story-frame');
-    var downAt = 0, downX = 0, tracking = false;
+    var downAt = 0, downX = 0, downY = 0, dragY = 0, tracking = false, canDrag = false, moved = false;
+
+    function setDrag(y) {
+      dragY = y;
+      frame.style.transform = y ? 'translateY(' + y + 'px)' : '';
+      stories.style.backgroundColor = y ? 'rgba(0,0,0,' + Math.max(0.2, 1 - y / frame.clientHeight) + ')' : '';
+    }
 
     frame.addEventListener('pointerdown', function (e) {
       if (e.target.closest('a, video, button')) return;
+      var r = frame.getBoundingClientRect();
       tracking = true;
+      moved = false;
       downAt = Date.now();
       downX = e.clientX;
+      downY = e.clientY;
+      canDrag = e.clientY - r.top < r.height / 2;
+      frame.style.transition = 'none';
+      frame.setPointerCapture(e.pointerId);
       pause();
+    });
+
+    frame.addEventListener('pointermove', function (e) {
+      if (!tracking) return;
+      var dy = e.clientY - downY;
+      if (Math.abs(dy) > 10 || Math.abs(e.clientX - downX) > 10) moved = true;
+      if (canDrag) setDrag(Math.max(0, dy));
     });
 
     frame.addEventListener('pointerup', function (e) {
       if (!tracking) return;
       tracking = false;
-      if (Date.now() - downAt > 300) { resume(); return; }
+      if (dragY > Math.min(120, frame.clientHeight * 0.18)) {
+        frame.style.transition = 'transform 0.2s ease-out';
+        frame.style.transform = 'translateY(100%)';
+        setTimeout(function () { closeStories(); frame.style.transition = ''; setDrag(0); }, 200);
+        return;
+      }
+      if (dragY) {
+        frame.style.transition = 'transform 0.2s ease-out';
+        setDrag(0);
+      }
+      if (moved || Date.now() - downAt > 300) { resume(); return; }
       paused = false;
       var r = frame.getBoundingClientRect();
       if (downX - r.left < r.width * 0.35) prev();
@@ -687,7 +718,11 @@
     });
 
     frame.addEventListener('pointercancel', function () {
-      if (tracking) { tracking = false; resume(); }
+      if (!tracking) return;
+      tracking = false;
+      frame.style.transition = 'transform 0.2s ease-out';
+      setDrag(0);
+      resume();
     });
 
     document.getElementById('story-close').addEventListener('click', closeStories);
