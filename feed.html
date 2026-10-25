@@ -607,11 +607,26 @@
     // Posts escritos direto no feed (não vêm da timeline), do mais recente para o mais antigo
     var POSTS = [
       {
+        title: 'Vucic, homem forte da Sérvia, admite derrota para movimento liderado por estudantes',
+        date: '25 de outubro de 2026',
+        resumo: [
+          'Aleksandar Vucic reconheceu na noite da eleição parlamentar que a Lista dos Estudantes venceu, com base em uma contagem por amostragem; os resultados oficiais ainda não saíram',
+          'Pelas projeções, os estudantes teriam de 135 a 140 das 250 cadeiras do Parlamento, contra cerca de 105 do partido de Vucic, o SNS',
+          'A eleição antecipada veio após quase dois anos de protestos estudantis contra corrupção e autoritarismo, iniciados após o desabamento da marquise da estação de trem de Novi Sad, em 2024, que matou 16 pessoas',
+          'Vucic culpou a mídia independente, países europeus e um "deep state americano" pela derrota'
+        ],
+        media: [{ type: 'img', src: 'images/cnn-vucic-derrota.jpg', alt: 'Manchete da CNN: Serbia’s strongman leader Vucic concedes defeat to student-led movement in seismic political shift' }],
+        fontes: [
+          { label: 'CNN', href: 'https://www.cnn.com/2026/10/25/europe/serbian-strongman-vucic-concedes-defeat-to-student-led-movement-intl-latam' },
+          { label: 'ABC News', href: 'https://www.abc.net.au/news/2026-10-26/serbia-election-vucic-defeat-student-protest/107307808' }
+        ]
+      },
+      {
         title: 'Já parou pra pensar que tem alguém nesse exato momento que votou 22 no RS com roupa que ganhou de doação das enchentes?',
         date: '25 de outubro de 2026'
       }
     ].map(function (p) {
-      var ev = { title: p.title, date: p.date, resumo: [], media: [], envolvidos: [], fontes: [] };
+      var ev = { title: p.title, date: p.date, resumo: p.resumo || [], media: p.media || [], envolvidos: p.envolvidos || [], fontes: p.fontes || [] };
       ev.slides = buildSlides(ev);
       return ev;
     });
