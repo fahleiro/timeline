@@ -603,17 +603,29 @@
     // ---------- Feed e perfil ----------
 
     var EVENTS = [];
+
+    // Posts escritos direto no feed (não vêm da timeline), do mais recente para o mais antigo
+    var POSTS = [
+      {
+        title: 'Já parou pra pensar que tem alguém nesse exato momento que votou 22 no RS com roupa que ganhou de doação das enchentes?',
+        date: '25 de outubro de 2026'
+      }
+    ].map(function (p) {
+      var ev = { title: p.title, date: p.date, resumo: [], media: [], envolvidos: [], fontes: [] };
+      ev.slides = buildSlides(ev);
+      return ev;
+    });
     var feed = document.getElementById('feed');
     var profileFeed = document.getElementById('profile-feed');
 
     function renderLists() {
       feed.innerHTML = '';
       profileFeed.innerHTML = '';
-      EVENTS.slice().reverse().forEach(function (ev) {
+      POSTS.concat(EVENTS.slice().reverse()).forEach(function (ev) {
         feed.appendChild(textPost(ev));
         profileFeed.appendChild(textPost(ev));
       });
-      document.getElementById('post-count').textContent = EVENTS.length;
+      document.getElementById('post-count').textContent = POSTS.length + EVENTS.length;
     }
 
     function route() {
